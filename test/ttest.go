@@ -29,6 +29,7 @@ func SubtestAll(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	for n, f := range Subtests {
 		t.Run(n, func(t *testing.T) {
 			f(t, at, bt, ap, bp)
+			f(t, bt, at, bp, ap)
 		})
 	}
 }
@@ -123,32 +124,42 @@ func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	defer cancel()
 	a, b := net.Pipe()
 
-	defer a.Close()
-	defer b.Close()
-
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		c, err := at.SecureInbound(ctx, a)
 		if err != nil {
+			a.Close()
 			t.Fatal(err)
+		}
+		defer c.Close()
+
+		if c.LocalPeer() != ap {
+			t.Errorf("expected local peer %s, got %s", ap, c.LocalPeer())
 		}
 		testWrite(t, c)
 		testRead(t, c)
-		c.Close()
 	}()
 
 	go func() {
 		defer wg.Done()
 		c, err := bt.SecureOutbound(ctx, b, ap)
 		if err != nil {
+			b.Close()
 			t.Fatal(err)
+		}
+		defer c.Close()
+
+		if c.RemotePeer() != ap {
+			t.Errorf("expected remote peer %s, got %s", ap, c.RemotePeer())
+		}
+		if c.LocalPeer() != bp {
+			t.Errorf("expected local peer %s, got %s", bp, c.LocalPeer())
 		}
 		testRead(t, c)
 		testWrite(t, c)
 		testEOF(t, c)
-		c.Close()
 	}()
 	wg.Wait()
 }
@@ -158,17 +169,16 @@ func SubtestKeys(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	defer cancel()
 	a, b := net.Pipe()
 
-	defer a.Close()
-	defer b.Close()
-
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		c, err := at.SecureInbound(ctx, a)
 		if err != nil {
+			a.Close()
 			t.Fatal(err)
 		}
+		defer c.Close()
 
 		if c.RemotePeer() != bp {
 			t.Errorf("expected remote peer %s, got remote peer %s", bp, c.RemotePeer())
@@ -182,15 +192,17 @@ func SubtestKeys(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 		if !c.RemotePeer().MatchesPublicKey(c.RemotePublicKey()) {
 			t.Error("local private key mismatch")
 		}
-		c.Close()
 	}()
 
 	go func() {
 		defer wg.Done()
 		c, err := bt.SecureOutbound(ctx, b, ap)
 		if err != nil {
+			b.Close()
 			t.Fatal(err)
 		}
+		defer c.Close()
+
 		if c.RemotePeer() != ap {
 			t.Errorf("expected remote peer %s, got remote peer %s", ap, c.RemotePeer())
 		}
@@ -213,13 +225,11 @@ func SubtestWrongPeer(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	defer cancel()
 	a, b := net.Pipe()
 
-	defer a.Close()
-	defer b.Close()
-
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
+		defer a.Close()
 		_, err := at.SecureInbound(ctx, a)
 		if err == nil {
 			t.Fatal("conection should have failed")
@@ -228,6 +238,7 @@ func SubtestWrongPeer(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 
 	go func() {
 		defer wg.Done()
+		defer b.Close()
 		_, err := bt.SecureOutbound(ctx, b, bp)
 		if err == nil {
 			t.Fatal("connection should have failed")
