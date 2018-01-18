@@ -10,6 +10,7 @@ import (
 
 	"math/rand"
 
+	peer "github.com/libp2p/go-libp2p-peer"
 	ss "github.com/libp2p/go-stream-security"
 )
 
@@ -124,6 +125,22 @@ func SubtestBasic(t *testing.T, at, bt ss.Transport) {
 	defer a.Close()
 	defer b.Close()
 
+	id, err := peer.IDFromPrivateKey(at.LocalPrivateKey())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != at.LocalPeer() {
+		t.Error("private key doesn't patch peer ID")
+	}
+
+	id, err = peer.IDFromPrivateKey(bt.LocalPrivateKey())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != bt.LocalPeer() {
+		t.Error("private key doesn't patch peer ID")
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
@@ -134,7 +151,23 @@ func SubtestBasic(t *testing.T, at, bt ss.Transport) {
 		}
 
 		if c.RemotePeer() != bt.LocalPeer() {
-			t.Errorf("expected peer %s, got peer %s", bt.LocalPeer(), c.RemotePeer())
+			t.Errorf("expected remote peer %s, got remote peer %s", bt.LocalPeer(), c.RemotePeer())
+		}
+		if c.LocalPeer() != at.LocalPeer() {
+			t.Errorf("expected local peer %s, got local peer %s", at.LocalPeer(), c.LocalPeer())
+		}
+		if !c.LocalPrivateKey().Equals(at.LocalPrivateKey()) {
+			t.Error("local private key mismatch")
+		}
+		if !c.RemotePublicKey().Equals(bt.LocalPrivateKey().GetPublic()) {
+			t.Error("remote public key mismatch")
+		}
+		id, err := peer.IDFromPublicKey(c.RemotePublicKey())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if id != c.RemotePeer() {
+			t.Error("remote public key doesn't match remote peer id")
 		}
 		testWrite(t, c)
 		testRead(t, c)
@@ -149,6 +182,22 @@ func SubtestBasic(t *testing.T, at, bt ss.Transport) {
 		}
 		if c.RemotePeer() != at.LocalPeer() {
 			t.Errorf("expected peer %s, got peer %s", at.LocalPeer(), c.RemotePeer())
+		}
+		if c.LocalPeer() != bt.LocalPeer() {
+			t.Errorf("expected local peer %s, got local peer %s", bt.LocalPeer(), c.LocalPeer())
+		}
+		if !c.LocalPrivateKey().Equals(bt.LocalPrivateKey()) {
+			t.Error("local private key mismatch")
+		}
+		if !c.RemotePublicKey().Equals(at.LocalPrivateKey().GetPublic()) {
+			t.Error("remote public key mismatch")
+		}
+		id, err := peer.IDFromPublicKey(c.RemotePublicKey())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if id != c.RemotePeer() {
+			t.Error("remote public key doesn't match remote peer id")
 		}
 		testRead(t, c)
 		testWrite(t, c)
