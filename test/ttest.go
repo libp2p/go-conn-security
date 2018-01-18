@@ -15,7 +15,8 @@ import (
 )
 
 var Subtests = map[string]func(t *testing.T, at, bt ss.Transport){
-	"Basic":     SubtestBasic,
+	"RW":        SubtestRW,
+	"Keys":      SubtestKeys,
 	"WrongPeer": SubtestWrongPeer,
 	"Stream":    SubtestStream,
 }
@@ -117,7 +118,42 @@ func testEOF(t *testing.T, c ss.Conn) {
 	}
 }
 
-func SubtestBasic(t *testing.T, at, bt ss.Transport) {
+func SubtestRW(t *testing.T, at, bt ss.Transport) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	a, b := net.Pipe()
+
+	defer a.Close()
+	defer b.Close()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		c, err := at.SecureInbound(ctx, a)
+		if err != nil {
+			t.Fatal(err)
+		}
+		testWrite(t, c)
+		testRead(t, c)
+		c.Close()
+	}()
+
+	go func() {
+		defer wg.Done()
+		c, err := bt.SecureOutbound(ctx, b, at.LocalPeer())
+		if err != nil {
+			t.Fatal(err)
+		}
+		testRead(t, c)
+		testWrite(t, c)
+		testEOF(t, c)
+		c.Close()
+	}()
+	wg.Wait()
+}
+
+func SubtestKeys(t *testing.T, at, bt ss.Transport) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -169,8 +205,6 @@ func SubtestBasic(t *testing.T, at, bt ss.Transport) {
 		if id != c.RemotePeer() {
 			t.Error("remote public key doesn't match remote peer id")
 		}
-		testWrite(t, c)
-		testRead(t, c)
 		c.Close()
 	}()
 
@@ -199,9 +233,6 @@ func SubtestBasic(t *testing.T, at, bt ss.Transport) {
 		if id != c.RemotePeer() {
 			t.Error("remote public key doesn't match remote peer id")
 		}
-		testRead(t, c)
-		testWrite(t, c)
-		testEOF(t, c)
 		c.Close()
 	}()
 	wg.Wait()
@@ -253,9 +284,6 @@ func SubtestStream(t *testing.T, at, bt ss.Transport) {
 			t.Fatal(err)
 		}
 
-		if c.RemotePeer() != bt.LocalPeer() {
-			t.Errorf("expected peer %s, got peer %s", bt.LocalPeer(), c.RemotePeer())
-		}
 		var swg sync.WaitGroup
 		swg.Add(2)
 		go func() {
@@ -275,9 +303,6 @@ func SubtestStream(t *testing.T, at, bt ss.Transport) {
 		c, err := bt.SecureOutbound(ctx, b, at.LocalPeer())
 		if err != nil {
 			t.Fatal(err)
-		}
-		if c.RemotePeer() != at.LocalPeer() {
-			t.Errorf("expected peer %s, got peer %s", at.LocalPeer(), c.RemotePeer())
 		}
 		io.Copy(c, c)
 		c.Close()
