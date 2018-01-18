@@ -14,7 +14,7 @@ import (
 	ss "github.com/libp2p/go-stream-security"
 )
 
-var Subtests = map[string]func(t *testing.T, at, bt ss.Transport){
+var Subtests = map[string]func(t *testing.T, at, bt ss.Transport, ap, bp peer.ID){
 	"RW":        SubtestRW,
 	"Keys":      SubtestKeys,
 	"WrongPeer": SubtestWrongPeer,
@@ -25,10 +25,10 @@ var TestMessage = []byte("hello world!")
 var TestStreamLen int64 = 1024 * 1024
 var TestSeed int64 = 1812
 
-func SubtestAll(t *testing.T, at, bt ss.Transport) {
+func SubtestAll(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	for n, f := range Subtests {
 		t.Run(n, func(t *testing.T) {
-			f(t, at, bt)
+			f(t, at, bt, ap, bp)
 		})
 	}
 }
@@ -118,7 +118,7 @@ func testEOF(t *testing.T, c ss.Conn) {
 	}
 }
 
-func SubtestRW(t *testing.T, at, bt ss.Transport) {
+func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -141,7 +141,7 @@ func SubtestRW(t *testing.T, at, bt ss.Transport) {
 
 	go func() {
 		defer wg.Done()
-		c, err := bt.SecureOutbound(ctx, b, at.LocalPeer())
+		c, err := bt.SecureOutbound(ctx, b, ap)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -153,29 +153,13 @@ func SubtestRW(t *testing.T, at, bt ss.Transport) {
 	wg.Wait()
 }
 
-func SubtestKeys(t *testing.T, at, bt ss.Transport) {
+func SubtestKeys(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
 
 	defer a.Close()
 	defer b.Close()
-
-	id, err := peer.IDFromPrivateKey(at.LocalPrivateKey())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if id != at.LocalPeer() {
-		t.Error("private key doesn't patch peer ID")
-	}
-
-	id, err = peer.IDFromPrivateKey(bt.LocalPrivateKey())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if id != bt.LocalPeer() {
-		t.Error("private key doesn't patch peer ID")
-	}
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -186,59 +170,45 @@ func SubtestKeys(t *testing.T, at, bt ss.Transport) {
 			t.Fatal(err)
 		}
 
-		if c.RemotePeer() != bt.LocalPeer() {
-			t.Errorf("expected remote peer %s, got remote peer %s", bt.LocalPeer(), c.RemotePeer())
+		if c.RemotePeer() != bp {
+			t.Errorf("expected remote peer %s, got remote peer %s", bp, c.RemotePeer())
 		}
-		if c.LocalPeer() != at.LocalPeer() {
-			t.Errorf("expected local peer %s, got local peer %s", at.LocalPeer(), c.LocalPeer())
+		if c.LocalPeer() != ap {
+			t.Errorf("expected local peer %s, got local peer %s", ap, c.LocalPeer())
 		}
-		if !c.LocalPrivateKey().Equals(at.LocalPrivateKey()) {
+		if !c.LocalPeer().MatchesPrivateKey(c.LocalPrivateKey()) {
 			t.Error("local private key mismatch")
 		}
-		if !c.RemotePublicKey().Equals(bt.LocalPrivateKey().GetPublic()) {
-			t.Error("remote public key mismatch")
-		}
-		id, err := peer.IDFromPublicKey(c.RemotePublicKey())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if id != c.RemotePeer() {
-			t.Error("remote public key doesn't match remote peer id")
+		if !c.RemotePeer().MatchesPublicKey(c.RemotePublicKey()) {
+			t.Error("local private key mismatch")
 		}
 		c.Close()
 	}()
 
 	go func() {
 		defer wg.Done()
-		c, err := bt.SecureOutbound(ctx, b, at.LocalPeer())
+		c, err := bt.SecureOutbound(ctx, b, ap)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if c.RemotePeer() != at.LocalPeer() {
-			t.Errorf("expected peer %s, got peer %s", at.LocalPeer(), c.RemotePeer())
+		if c.RemotePeer() != ap {
+			t.Errorf("expected remote peer %s, got remote peer %s", ap, c.RemotePeer())
 		}
-		if c.LocalPeer() != bt.LocalPeer() {
-			t.Errorf("expected local peer %s, got local peer %s", bt.LocalPeer(), c.LocalPeer())
+		if c.LocalPeer() != bp {
+			t.Errorf("expected local peer %s, got local peer %s", bp, c.LocalPeer())
 		}
-		if !c.LocalPrivateKey().Equals(bt.LocalPrivateKey()) {
+		if !c.LocalPeer().MatchesPrivateKey(c.LocalPrivateKey()) {
 			t.Error("local private key mismatch")
 		}
-		if !c.RemotePublicKey().Equals(at.LocalPrivateKey().GetPublic()) {
-			t.Error("remote public key mismatch")
-		}
-		id, err := peer.IDFromPublicKey(c.RemotePublicKey())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if id != c.RemotePeer() {
-			t.Error("remote public key doesn't match remote peer id")
+		if !c.RemotePeer().MatchesPublicKey(c.RemotePublicKey()) {
+			t.Error("local private key mismatch")
 		}
 		c.Close()
 	}()
 	wg.Wait()
 }
 
-func SubtestWrongPeer(t *testing.T, at, bt ss.Transport) {
+func SubtestWrongPeer(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -258,7 +228,7 @@ func SubtestWrongPeer(t *testing.T, at, bt ss.Transport) {
 
 	go func() {
 		defer wg.Done()
-		_, err := bt.SecureOutbound(ctx, b, bt.LocalPeer())
+		_, err := bt.SecureOutbound(ctx, b, bp)
 		if err == nil {
 			t.Fatal("connection should have failed")
 		}
@@ -266,7 +236,7 @@ func SubtestWrongPeer(t *testing.T, at, bt ss.Transport) {
 	wg.Wait()
 }
 
-func SubtestStream(t *testing.T, at, bt ss.Transport) {
+func SubtestStream(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -300,7 +270,7 @@ func SubtestStream(t *testing.T, at, bt ss.Transport) {
 
 	go func() {
 		defer wg.Done()
-		c, err := bt.SecureOutbound(ctx, b, at.LocalPeer())
+		c, err := bt.SecureOutbound(ctx, b, ap)
 		if err != nil {
 			t.Fatal(err)
 		}
