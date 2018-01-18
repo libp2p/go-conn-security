@@ -12,8 +12,11 @@ import (
 // Transport is an interface that turns an unauthenticated, plain-text
 // stream into an authenticated, encrypted stream.
 type Transport interface {
-	// Secure secures the passed insecure connection.
-	Secure(ctx context.Context, insecure net.Conn, server bool) (Conn, error)
+	// SecureInbound secures an inbound connection.
+	SecureInbound(ctx context.Context, insecure net.Conn) (Conn, error)
+
+	// SecureOutbound secures an outbound connection.
+	SecureOutbound(ctx context.Context, insecure net.Conn, p peer.ID) (Conn, error)
 
 	// LocalPeer returns the local peer ID used by this security transport.
 	LocalPeer() peer.ID
