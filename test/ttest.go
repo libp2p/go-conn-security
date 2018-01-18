@@ -21,7 +21,7 @@ var Subtests = map[string]func(t *testing.T, at, bt ss.Transport){
 }
 
 var TestMessage = []byte("hello world!")
-var TestStreamLen int64 = 1024 * 8
+var TestStreamLen int64 = 1024 * 1024
 var TestSeed int64 = 1812
 
 func SubtestAll(t *testing.T, at, bt ss.Transport) {
