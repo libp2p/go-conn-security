@@ -12,6 +12,10 @@ import (
 // security and simply wraps connections in blank
 type InsecureTransport peer.ID
 
+func NewInsecureTransport(p peer.ID) *InsecureTransport {
+	return (*InsecureTransport)(&p)
+}
+
 func (t *InsecureTransport) LocalPeer() peer.ID {
 	return peer.ID(*t)
 }
