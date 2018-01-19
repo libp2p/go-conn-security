@@ -7,6 +7,7 @@ import (
 	"net"
 	"sync"
 	"testing"
+	"time"
 
 	"math/rand"
 
@@ -15,10 +16,12 @@ import (
 )
 
 var Subtests = map[string]func(t *testing.T, at, bt ss.Transport, ap, bp peer.ID){
-	"RW":        SubtestRW,
-	"Keys":      SubtestKeys,
-	"WrongPeer": SubtestWrongPeer,
-	"Stream":    SubtestStream,
+	"RW":                      SubtestRW,
+	"Keys":                    SubtestKeys,
+	"WrongPeer":               SubtestWrongPeer,
+	"Stream":                  SubtestStream,
+	"CancelHandshakeInbound":  SubtestCancelHandshakeInbound,
+	"CancelHandshakeOutbound": SubtestCancelHandshakeOutbound,
 }
 
 var TestMessage = []byte("hello world!")
@@ -108,6 +111,21 @@ func testRead(t *testing.T, c ss.Conn) {
 	}
 }
 
+func testWriteFail(t *testing.T, c ss.Conn) {
+	n, err := c.Write(TestMessage)
+	if n != 0 || err == nil {
+		t.Error("shouldn't have been able to write to a closed conn")
+	}
+}
+
+func testReadFail(t *testing.T, c ss.Conn) {
+	buf := make([]byte, len(TestMessage))
+	n, err := c.Read(buf)
+	if n != 0 || err == nil {
+		t.Error("shouldn't have been able to write to a closed conn")
+	}
+}
+
 func testEOF(t *testing.T, c ss.Conn) {
 	buf := make([]byte, 100)
 	n, err := c.Read(buf)
@@ -133,13 +151,15 @@ func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 			a.Close()
 			t.Fatal(err)
 		}
-		defer c.Close()
 
 		if c.LocalPeer() != ap {
 			t.Errorf("expected local peer %s, got %s", ap, c.LocalPeer())
 		}
 		testWrite(t, c)
 		testRead(t, c)
+		c.Close()
+		testWriteFail(t, c)
+		testReadFail(t, c)
 	}()
 
 	go func() {
@@ -149,7 +169,6 @@ func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 			b.Close()
 			t.Fatal(err)
 		}
-		defer c.Close()
 
 		if c.RemotePeer() != ap {
 			t.Errorf("expected remote peer %s, got %s", ap, c.RemotePeer())
@@ -160,6 +179,8 @@ func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 		testRead(t, c)
 		testWrite(t, c)
 		testEOF(t, c)
+		testWriteFail(t, c)
+		c.Close()
 	}()
 	wg.Wait()
 }
@@ -245,6 +266,66 @@ func SubtestWrongPeer(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 		}
 	}()
 	wg.Wait()
+}
+
+func SubtestCancelHandshakeOutbound(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+	ctx, cancel := context.WithCancel(context.Background())
+	a, b := net.Pipe()
+	defer a.Close()
+	defer b.Close()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := at.SecureOutbound(ctx, a, ap)
+		if err == nil {
+			t.Fatal("connection should have failed")
+		}
+	}()
+	time.Sleep(time.Millisecond)
+	cancel()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := bt.SecureInbound(ctx, b)
+		if err == nil {
+			t.Fatal("connection should have failed")
+		}
+	}()
+
+	wg.Wait()
+
+}
+
+func SubtestCancelHandshakeInbound(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+	ctx, cancel := context.WithCancel(context.Background())
+	a, b := net.Pipe()
+	defer a.Close()
+	defer b.Close()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := at.SecureInbound(ctx, a)
+		if err == nil {
+			t.Fatal("connection should have failed")
+		}
+	}()
+	time.Sleep(time.Millisecond)
+	cancel()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, err := bt.SecureOutbound(ctx, b, bp)
+		if err == nil {
+			t.Fatal("connection should have failed")
+		}
+	}()
+
+	wg.Wait()
+
 }
 
 func SubtestStream(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
