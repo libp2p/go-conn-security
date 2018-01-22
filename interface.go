@@ -8,8 +8,8 @@ import (
 	transport "github.com/libp2p/go-libp2p-transport"
 )
 
-// Transport is an interface that turns an unauthenticated, plain-text
-// stream into an authenticated, encrypted stream.
+// A Transport turns inbound and outbound unauthenticated,
+// plain-text connections into authenticated, encrypted connections.
 type Transport interface {
 	// SecureInbound secures an inbound connection.
 	SecureInbound(ctx context.Context, insecure net.Conn) (Conn, error)
@@ -18,8 +18,7 @@ type Transport interface {
 	SecureOutbound(ctx context.Context, insecure net.Conn, p peer.ID) (Conn, error)
 }
 
-// Conn provides the necessary functionality to wrap a connection
-// and tunnel it through a secure channel via the provided ReadWriter.
+// Conn is an authenticated, encrypted connection.
 type Conn interface {
 	net.Conn
 	transport.ConnSecurity
