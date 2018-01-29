@@ -12,10 +12,10 @@ import (
 	"math/rand"
 
 	peer "github.com/libp2p/go-libp2p-peer"
-	ss "github.com/libp2p/go-stream-security"
+	connsec "github.com/libp2p/go-conn-security"
 )
 
-var Subtests = map[string]func(t *testing.T, at, bt ss.Transport, ap, bp peer.ID){
+var Subtests = map[string]func(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID){
 	"RW":                      SubtestRW,
 	"Keys":                    SubtestKeys,
 	"WrongPeer":               SubtestWrongPeer,
@@ -28,7 +28,7 @@ var TestMessage = []byte("hello world!")
 var TestStreamLen int64 = 1024 * 1024
 var TestSeed int64 = 1812
 
-func SubtestAll(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestAll(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	for n, f := range Subtests {
 		t.Run(n, func(t *testing.T) {
 			f(t, at, bt, ap, bp)
@@ -44,7 +44,7 @@ func randStream() io.Reader {
 	}
 }
 
-func testWriteSustain(t *testing.T, c ss.Conn) {
+func testWriteSustain(t *testing.T, c connsec.Conn) {
 	source := randStream()
 	n := int64(0)
 	for {
@@ -64,7 +64,7 @@ func testWriteSustain(t *testing.T, c ss.Conn) {
 	}
 }
 
-func testReadSustain(t *testing.T, c ss.Conn) {
+func testReadSustain(t *testing.T, c connsec.Conn) {
 	expected := randStream()
 	total := 0
 	ebuf := make([]byte, 1024)
@@ -87,7 +87,7 @@ func testReadSustain(t *testing.T, c ss.Conn) {
 		}
 	}
 }
-func testWrite(t *testing.T, c ss.Conn) {
+func testWrite(t *testing.T, c connsec.Conn) {
 	n, err := c.Write(TestMessage)
 	if err != nil {
 		t.Fatal(err)
@@ -97,7 +97,7 @@ func testWrite(t *testing.T, c ss.Conn) {
 	}
 }
 
-func testRead(t *testing.T, c ss.Conn) {
+func testRead(t *testing.T, c connsec.Conn) {
 	buf := make([]byte, 100)
 	n, err := c.Read(buf)
 	if err != nil {
@@ -111,14 +111,14 @@ func testRead(t *testing.T, c ss.Conn) {
 	}
 }
 
-func testWriteFail(t *testing.T, c ss.Conn) {
+func testWriteFail(t *testing.T, c connsec.Conn) {
 	n, err := c.Write(TestMessage)
 	if n != 0 || err == nil {
 		t.Error("shouldn't have been able to write to a closed conn")
 	}
 }
 
-func testReadFail(t *testing.T, c ss.Conn) {
+func testReadFail(t *testing.T, c connsec.Conn) {
 	buf := make([]byte, len(TestMessage))
 	n, err := c.Read(buf)
 	if n != 0 || err == nil {
@@ -126,7 +126,7 @@ func testReadFail(t *testing.T, c ss.Conn) {
 	}
 }
 
-func testEOF(t *testing.T, c ss.Conn) {
+func testEOF(t *testing.T, c connsec.Conn) {
 	buf := make([]byte, 100)
 	n, err := c.Read(buf)
 	if n != 0 {
@@ -137,7 +137,7 @@ func testEOF(t *testing.T, c ss.Conn) {
 	}
 }
 
-func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestRW(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -185,7 +185,7 @@ func SubtestRW(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	wg.Wait()
 }
 
-func SubtestKeys(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestKeys(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -241,7 +241,7 @@ func SubtestKeys(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	wg.Wait()
 }
 
-func SubtestWrongPeer(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestWrongPeer(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
@@ -268,7 +268,7 @@ func SubtestWrongPeer(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
 	wg.Wait()
 }
 
-func SubtestCancelHandshakeOutbound(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestCancelHandshakeOutbound(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	a, b := net.Pipe()
 	defer a.Close()
@@ -298,7 +298,7 @@ func SubtestCancelHandshakeOutbound(t *testing.T, at, bt ss.Transport, ap, bp pe
 
 }
 
-func SubtestCancelHandshakeInbound(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestCancelHandshakeInbound(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	a, b := net.Pipe()
 	defer a.Close()
@@ -328,7 +328,7 @@ func SubtestCancelHandshakeInbound(t *testing.T, at, bt ss.Transport, ap, bp pee
 
 }
 
-func SubtestStream(t *testing.T, at, bt ss.Transport, ap, bp peer.ID) {
+func SubtestStream(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	a, b := net.Pipe()
