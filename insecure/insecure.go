@@ -21,7 +21,7 @@ type Transport struct {
 }
 
 // New constructs a new insecure transport.
-func New(id peer.ID, _ ci.PrivKey) *Transport {
+func New(id peer.ID) *Transport {
 	return &Transport{
 		id: id,
 	}
