@@ -4,8 +4,8 @@ import (
 	"context"
 	"net"
 
+	inet "github.com/libp2p/go-libp2p-net"
 	peer "github.com/libp2p/go-libp2p-peer"
-	transport "github.com/libp2p/go-libp2p-transport"
 )
 
 // A Transport turns inbound and outbound unauthenticated,
@@ -21,5 +21,5 @@ type Transport interface {
 // Conn is an authenticated, encrypted connection.
 type Conn interface {
 	net.Conn
-	transport.ConnSecurity
+	inet.ConnSecurity
 }
