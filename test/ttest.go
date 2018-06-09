@@ -11,8 +11,8 @@ import (
 
 	"math/rand"
 
-	peer "github.com/libp2p/go-libp2p-peer"
 	connsec "github.com/libp2p/go-conn-security"
+	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 var Subtests = map[string]func(t *testing.T, at, bt connsec.Transport, ap, bp peer.ID){
