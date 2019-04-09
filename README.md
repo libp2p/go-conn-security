@@ -4,8 +4,6 @@
 [![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](https://libp2p.io/)
 [![GoDoc](https://godoc.org/github.com/libp2p/go-conn-security?status.svg)](https://godoc.org/github.com/libp2p/go-conn-security)
-[![Coverage Status](https://coveralls.io/repos/github/libp2p/go-conn-security/badge.svg?branch=master)](https://coveralls.io/github/libp2p/go-conn-security?branch=master)
-[![Build Status](https://travis-ci.org/libp2p/go-conn-security.svg?branch=master)](https://travis-ci.org/libp2p/go-conn-security)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
 
 > Stream security transport interfaces
