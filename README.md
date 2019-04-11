@@ -1,10 +1,10 @@
 # go-conn-security
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](https://protocol.ai)
 [![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](https://libp2p.io/)
-[![GoDoc](https://godoc.org/github.com/libp2p/go-conn-security?status.svg)](https://godoc.org/github.com/libp2p/go-conn-security)
+[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discourse posts](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg)](https://discuss.libp2p.io)
+[![GoDoc](https://godoc.org/github.com/libp2p/go-conn-security?status.svg)](https://godoc.org/github.com/libp2p/go-conn-security)
 
 > Stream security transport interfaces
 
@@ -22,23 +22,12 @@ Known libp2p security transports include:
 go get github.com/libp2p/go-conn-security
 ```
 
-Note that `go-conn-security` is packaged with Gx, so it is recommended to use Gx to install and use it (see the Usage section).
+This repo is [gomod](https://github.com/golang/go/wiki/Modules)-compatible, and users of
+go 1.11 and later with modules enabled will automatically pull the latest tagged release
+by referencing this package. Upgrades to future releases can be managed using `go get`,
+or by editing your `go.mod` file as [described by the gomod documentation](https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies).
 
 ## Usage
-
-This module is packaged with [Gx](https://github.com/whyrusleeping/gx). In order to use it in your own project it is recommended that you:
-
-```sh
-go get -u github.com/whyrusleeping/gx
-go get -u github.com/whyrusleeping/gx-go
-cd <your-project-repository>
-gx init
-gx import github.com/libp2p/go-conn-security
-gx install --global
-gx-go --rewrite
-```
-
-Please check [Gx](https://github.com/whyrusleeping/gx) and [Gx-go](https://github.com/whyrusleeping/gx-go) documentation for more information.
 
 For more information about how `go-conn-security` is used in the libp2p context, you can see the [go-libp2p-transport-upgrader](https://github.com/libp2p/go-libp2p-transport-upgrader) module.
 
