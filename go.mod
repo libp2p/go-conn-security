@@ -1,7 +1,7 @@
 module github.com/libp2p/go-conn-security
 
 require (
-	github.com/libp2p/go-libp2p-crypto v0.0.1
-	github.com/libp2p/go-libp2p-net v0.0.1
-	github.com/libp2p/go-libp2p-peer v0.0.1
+	github.com/libp2p/go-libp2p-core v0.0.0-20190416150442-54a1b70f07da
+	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25 // indirect
+	golang.org/x/sys v0.0.0-20190228124157-a34e9553db1e // indirect
 )
