@@ -13,6 +13,7 @@ This package defines the interfaces that must be fulfilled by libp2p network sec
 Known libp2p security transports include:
 
 * [go-libp2p-secio](https://github.com/libp2p/go-libp2p-secio)
+* [go-libp2p-tls](https://github.com/libp2p/go-libp2p-tls)
 
 ## Install
 
