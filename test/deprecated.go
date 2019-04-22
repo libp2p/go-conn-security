@@ -6,51 +6,51 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/sec"
 
-	moved "github.com/libp2p/go-libp2p-core/sec/test"
+	tsec "github.com/libp2p/go-libp2p-testing/suites/sec"
 )
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.Subtests instead.
-var Subtests = moved.Subtests
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.Subtests instead.
+var Subtests = tsec.Subtests
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.TestMessage instead.
-var TestMessage = moved.TestMessage
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.TestMessage instead.
+var TestMessage = tsec.TestMessage
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.TestStreamLen instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.TestStreamLen instead.
 // Warning: it's impossible to alias a var in go, so reads and writes to this variable may be inaccurate
 // or not have the intended effect.
-var TestStreamLen = moved.TestStreamLen
+var TestStreamLen = tsec.TestStreamLen
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.TestSeed instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.TestSeed instead.
 // Warning: it's impossible to alias a var in go, so reads and writes to this variable may be inaccurate
 // or not have the intended effect.
-var TestSeed = moved.TestSeed
+var TestSeed = tsec.TestSeed
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.SubtestAll instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.SubtestAll instead.
 func SubtestAll(t *testing.T, at, bt sec.SecureTransport, ap, bp peer.ID) {
-	moved.SubtestAll(t, at, bt, ap, bp)
+	tsec.SubtestAll(t, at, bt, ap, bp)
 }
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.SubtestKeys instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.SubtestKeys instead.
 func SubtestKeys(t *testing.T, at, bt sec.SecureTransport, ap, bp peer.ID) {
-	moved.SubtestKeys(t, at, bt, ap, bp)
+	tsec.SubtestKeys(t, at, bt, ap, bp)
 }
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.SubtestWrongPeer instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.SubtestWrongPeer instead.
 func SubtestWrongPeer(t *testing.T, at, bt sec.SecureTransport, ap, bp peer.ID) {
-	moved.SubtestWrongPeer(t, at, bt, ap, bp)
+	tsec.SubtestWrongPeer(t, at, bt, ap, bp)
 }
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.SubtestCancelHandshakeOutbound instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.SubtestCancelHandshakeOutbound instead.
 func SubtestCancelHandshakeOutbound(t *testing.T, at, bt sec.SecureTransport, ap, bp peer.ID) {
-	moved.SubtestCancelHandshakeOutbound(t, at, bt, ap, bp)
+	tsec.SubtestCancelHandshakeOutbound(t, at, bt, ap, bp)
 }
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.SubtestCancelHandshakeInbound instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.SubtestCancelHandshakeInbound instead.
 func SubtestCancelHandshakeInbound(t *testing.T, at, bt sec.SecureTransport, ap, bp peer.ID) {
-	moved.SubtestCancelHandshakeInbound(t, at, bt, ap, bp)
+	tsec.SubtestCancelHandshakeInbound(t, at, bt, ap, bp)
 }
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/test.SubtestStream instead.
+// Deprecated: use github.com/libp2p/go-libp2p-testing/sec.SubtestStream instead.
 func SubtestStream(t *testing.T, at, bt sec.SecureTransport, ap, bp peer.ID) {
-	moved.SubtestStream(t, at, bt, ap, bp)
+	tsec.SubtestStream(t, at, bt, ap, bp)
 }

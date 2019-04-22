@@ -2,19 +2,19 @@ package insecure
 
 import (
 	"github.com/libp2p/go-libp2p-core/peer"
-	moved "github.com/libp2p/go-libp2p-core/sec/insecure"
+	core "github.com/libp2p/go-libp2p-core/sec/insecure"
 )
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/insecure.ID instead.
-const ID = moved.ID
+// Deprecated: use github.com/libp2p/go-libp2p-core/sec/insecure.ID instead.
+const ID = core.ID
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/insecure.Transport instead.
-type Transport = moved.Transport
+// Deprecated: use github.com/libp2p/go-libp2p-core/sec/insecure.Transport instead.
+type Transport = core.Transport
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/insecure.New instead.
-func New(id peer.ID) *moved.Transport {
-	return moved.New(id)
+// Deprecated: use github.com/libp2p/go-libp2p-core/sec/insecure.New instead.
+func New(id peer.ID) *core.Transport {
+	return core.New(id)
 }
 
-// Deprecated: Use github.com/libp2p/go-libp2p-core/sec/insecure.Conn instead.
-type Conn = moved.Conn
+// Deprecated: use github.com/libp2p/go-libp2p-core/sec/insecure.Conn instead.
+type Conn = core.Conn
