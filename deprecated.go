@@ -1,3 +1,4 @@
+// Deprecated: use github.com/libp2p/go-libp2p-core/sec instead.
 package connsec
 
 import core "github.com/libp2p/go-libp2p-core/sec"
